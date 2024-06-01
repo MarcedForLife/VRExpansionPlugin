@@ -725,7 +725,7 @@ void UGS_Melee::HandlePostPhysicsHandle(UGripMotionControllerComponent* Gripping
 	if (!bIsActive)
 		return;
 
-	if (SecondaryHand.IsValid() )// && GrippingController == PrimaryHand.HoldingController)
+	if (PrimaryHand.IsValid() || SecondaryHand.IsValid())// && GrippingController == PrimaryHand.HoldingController)
 	{
 		if (GrippingController == SecondaryHand.HoldingController && HandleInfo->GripID == SecondaryHand.GripID)
 		{
