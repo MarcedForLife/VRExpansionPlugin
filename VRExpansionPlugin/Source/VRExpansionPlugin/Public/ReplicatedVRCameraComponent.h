@@ -130,7 +130,14 @@ public:
 	// Max distance to allow smoothing before snapping entirely to the new position
 	UPROPERTY(EditAnywhere, Category = "GripMotionController|Networking|Smoothing", meta = (editcondition = "bUseExponentialSmoothing"))
 		float NetworkNoSmoothUpdateDistance = 100.f;
-	
+
+	// The physics proxy host we should update proxy to
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ReplicatedCamera|Advanced|Tracking")
+	FPhysicsProxyStruct PhysicsProxyHost;
+
+	UFUNCTION(BlueprintCallable, Category = "ReplicatedCamera|Advanced|Tracking")
+	void SetPhysicsProxyHost(FPhysicsProxyStruct NewPhysicsProxyHost);
+
 	UFUNCTION()
 	virtual void OnRep_ReplicatedCameraTransform();
 

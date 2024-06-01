@@ -9,7 +9,7 @@
 #include "Rendering/MotionVectorSimulation.h"
 #include "VRBaseCharacter.h"
 #include "IHeadMountedDisplay.h"
-
+#include "Kismet/KismetMathLibrary.h"
 
 // Ported epics head tracking allowed for world fix back to this temp patch in 4.27
 bool TMP_IsHeadTrackingAllowedForWorld(IXRTrackingSystem* XRSystem, UWorld* World)
@@ -443,6 +443,15 @@ void UReplicatedVRCameraComponent::GetCameraView(float DeltaTime, FMinimalViewIn
 	{
 		DesiredView.Location = GetComponentLocation();
 		DesiredView.Rotation = GetComponentRotation();
+		if (IsValid(PhysicsProxyHost.ProxyComponent) && IsValid(PhysicsProxyHost.OriginalComponent))
+		{
+			FTransform OriginalTransform = PhysicsProxyHost.OriginalComponent->GetComponentTransform();
+			FTransform ProxyTransform = PhysicsProxyHost.ProxyComponent->GetComponentTransform();
+			FVector RelativeProxyLocation = UKismetMathLibrary::InverseTransformLocation(ProxyTransform, DesiredView.Location);
+			FRotator RelativeProxyRotation = UKismetMathLibrary::InverseTransformRotation(ProxyTransform, DesiredView.Rotation);
+			DesiredView.Location = UKismetMathLibrary::TransformLocation(OriginalTransform, RelativeProxyLocation);
+			DesiredView.Rotation = UKismetMathLibrary::TransformRotation(OriginalTransform, RelativeProxyRotation);
+		}
 	}
 
 	DesiredView.FOV = bUseAdditiveOffset ? (FieldOfView + AdditiveFOVOffset) : FieldOfView;
@@ -463,6 +472,11 @@ void UReplicatedVRCameraComponent::GetCameraView(float DeltaTime, FMinimalViewIn
 
 	// If this camera component has a motion vector simumlation transform, use that for the current view's previous transform
 	DesiredView.PreviousViewTransform = FMotionVectorSimulation::Get().GetPreviousTransform(this);
+}
+
+void UReplicatedVRCameraComponent::SetPhysicsProxyHost(FPhysicsProxyStruct NewPhysicsProxyHost)
+{
+	PhysicsProxyHost = NewPhysicsProxyHost;
 }
 
 void UReplicatedVRCameraComponent::OnRep_ReplicatedCameraTransform()
